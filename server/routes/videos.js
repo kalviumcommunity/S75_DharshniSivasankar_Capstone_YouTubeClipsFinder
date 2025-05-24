@@ -230,6 +230,81 @@ router.post("/save", auth, async (req, res) => {
   }
 })
 
+// DELETE /api/videos/saved/:id - Remove a saved video (protected route)
+router.delete("/saved/:id", auth, async (req, res) => {
+  try {
+    const { id } = req.params
 
+    const video = await Video.findOneAndDelete({
+      videoId: id,
+      user: req.user.id,
+    })
+
+    if (!video) {
+      return res.status(404).json({ message: "Video not found" })
+    }
+
+    res.json({ message: "Video removed successfully" })
+  } catch (error) {
+    console.error("Error removing video:", error)
+    res.status(500).json({ message: "Error removing video" })
+  }
+})
+
+// Helper functions
+function formatDate(dateString) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 1) {
+    return "Today"
+  } else if (diffDays === 1) {
+    return "Yesterday"
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30)
+    return `${months} ${months === 1 ? "month" : "months"} ago`
+  } else {
+    const years = Math.floor(diffDays / 365)
+    return `${years} ${years === 1 ? "year" : "years"} ago`
+  }
+}
+
+function formatCount(count) {
+  if (!count) return "0"
+
+  const num = Number.parseInt(count)
+  if (num < 1000) {
+    return num.toString()
+  } else if (num < 1000000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K"
+  } else {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M"
+  }
+}
+
+function formatDuration(duration) {
+  // Convert ISO 8601 duration to readable format
+  // Example: PT1H30M15S -> 1:30:15
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+
+  if (!match) return "0:00"
+
+  const hours = match[1] ? Number.parseInt(match[1]) : 0
+  const minutes = match[2] ? Number.parseInt(match[2]) : 0
+  const seconds = match[3] ? Number.parseInt(match[3]) : 0
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  } else {
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
+}
 
 module.exports = router

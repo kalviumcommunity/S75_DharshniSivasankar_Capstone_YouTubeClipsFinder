@@ -18,6 +18,24 @@ router.get("/", auth, async (req, res) => {
   }
 })
 
+// Create a new playlist
+router.post("/", auth, async (req, res) => {
+  try {
+    const { name, description } = req.body
+
+    const newPlaylist = new Playlist({
+      name,
+      description,
+      user: req.user.id,
+    })
+
+    await newPlaylist.save()
+    res.status(201).json(newPlaylist)
+  } catch (error) {
+    console.error("Error creating playlist:", error)
+    res.status(500).json({ message: "Error creating playlist" })
+  }
+})
 
 // Get a single playlist by ID
 router.get("/:id", auth, async (req, res) => {
@@ -40,23 +58,52 @@ router.get("/:id", auth, async (req, res) => {
   }
 })
 
-
-// Create a new playlist
-router.post("/", auth, async (req, res) => {
+// Update a playlist
+router.put("/:id", auth, async (req, res) => {
   try {
     const { name, description } = req.body
 
-    const newPlaylist = new Playlist({
-      name,
-      description,
-      user: req.user.id,
-    })
+    const playlist = await Playlist.findById(req.params.id)
 
-    await newPlaylist.save()
-    res.status(201).json(newPlaylist)
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist not found" })
+    }
+
+    // Check if the playlist belongs to the user
+    if (playlist.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: "Not authorized" })
+    }
+
+    playlist.name = name || playlist.name
+    playlist.description = description || playlist.description
+
+    await playlist.save()
+    res.json(playlist)
   } catch (error) {
-    console.error("Error creating playlist:", error)
-    res.status(500).json({ message: "Error creating playlist" })
+    console.error("Error updating playlist:", error)
+    res.status(500).json({ message: "Error updating playlist" })
+  }
+})
+
+// Delete a playlist
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id)
+
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist not found" })
+    }
+
+    // Check if the playlist belongs to the user
+    if (playlist.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: "Not authorized" })
+    }
+
+    await playlist.remove()
+    res.json({ message: "Playlist removed" })
+  } catch (error) {
+    console.error("Error deleting playlist:", error)
+    res.status(500).json({ message: "Error deleting playlist" })
   }
 })
 
@@ -98,11 +145,9 @@ router.post("/:id/videos", auth, async (req, res) => {
   }
 })
 
-// Update a playlist
-router.put("/:id", auth, async (req, res) => {
+// Remove a video from a playlist
+router.delete("/:id/videos/:videoId", auth, async (req, res) => {
   try {
-    const { name, description } = req.body
-
     const playlist = await Playlist.findById(req.params.id)
 
     if (!playlist) {
@@ -114,14 +159,24 @@ router.put("/:id", auth, async (req, res) => {
       return res.status(401).json({ message: "Not authorized" })
     }
 
-    playlist.name = name || playlist.name
-    playlist.description = description || playlist.description
+    // Find the video
+    const video = await Video.findOne({ videoId: req.params.videoId })
+
+    if (!video) {
+      return res.status(404).json({ message: "Video not found" })
+    }
+
+    // Remove video from playlist
+    const index = playlist.videos.indexOf(video._id)
+    if (index > -1) {
+      playlist.videos.splice(index, 1)
+    }
 
     await playlist.save()
     res.json(playlist)
   } catch (error) {
-    console.error("Error updating playlist:", error)
-    res.status(500).json({ message: "Error updating playlist" })
+    console.error("Error removing video from playlist:", error)
+    res.status(500).json({ message: "Error removing video from playlist" })
   }
 })
 
