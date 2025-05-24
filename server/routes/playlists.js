@@ -41,5 +41,61 @@ router.get("/:id", auth, async (req, res) => {
 })
 
 
+// Create a new playlist
+router.post("/", auth, async (req, res) => {
+  try {
+    const { name, description } = req.body
+
+    const newPlaylist = new Playlist({
+      name,
+      description,
+      user: req.user.id,
+    })
+
+    await newPlaylist.save()
+    res.status(201).json(newPlaylist)
+  } catch (error) {
+    console.error("Error creating playlist:", error)
+    res.status(500).json({ message: "Error creating playlist" })
+  }
+})
+
+// Add a video to a playlist
+router.post("/:id/videos", auth, async (req, res) => {
+  try {
+    const { videoId } = req.body
+
+    const playlist = await Playlist.findById(req.params.id)
+
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist not found" })
+    }
+
+    // Check if the playlist belongs to the user
+    if (playlist.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: "Not authorized" })
+    }
+
+    // Find the video in the database or create it
+    const video = await Video.findOne({ videoId })
+
+    if (!video) {
+      return res.status(404).json({ message: "Video not found" })
+    }
+
+    // Check if video is already in the playlist
+    if (playlist.videos.includes(video._id)) {
+      return res.status(400).json({ message: "Video already in playlist" })
+    }
+
+    playlist.videos.push(video._id)
+    await playlist.save()
+
+    res.json(playlist)
+  } catch (error) {
+    console.error("Error adding video to playlist:", error)
+    res.status(500).json({ message: "Error adding video to playlist" })
+  }
+})
 
 module.exports = router
