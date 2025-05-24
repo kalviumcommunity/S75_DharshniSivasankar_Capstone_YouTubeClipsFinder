@@ -200,4 +200,34 @@ router.get("/related/:videoId", async (req, res) => {
   }
 })
 
+// POST /api/videos/save - Save a video (protected route)
+router.post("/save", auth, async (req, res) => {
+  try {
+    const videoData = req.body
+
+    // Check if video already exists for this user
+    const existingVideo = await Video.findOne({
+      videoId: videoData.videoId,
+      user: req.user.id,
+    })
+
+    if (existingVideo) {
+      return res.status(400).json({ message: "Video already saved" })
+    }
+
+    // Create new video with user reference
+    const video = new Video({
+      ...videoData,
+      user: req.user.id,
+    })
+
+    await video.save()
+
+    res.status(201).json(video)
+  } catch (error) {
+    console.error("Error saving video:", error)
+    res.status(500).json({ message: "Error saving video" })
+  }
+})
+
 module.exports = router
