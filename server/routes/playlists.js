@@ -98,4 +98,31 @@ router.post("/:id/videos", auth, async (req, res) => {
   }
 })
 
+// Update a playlist
+router.put("/:id", auth, async (req, res) => {
+  try {
+    const { name, description } = req.body
+
+    const playlist = await Playlist.findById(req.params.id)
+
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist not found" })
+    }
+
+    // Check if the playlist belongs to the user
+    if (playlist.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: "Not authorized" })
+    }
+
+    playlist.name = name || playlist.name
+    playlist.description = description || playlist.description
+
+    await playlist.save()
+    res.json(playlist)
+  } catch (error) {
+    console.error("Error updating playlist:", error)
+    res.status(500).json({ message: "Error updating playlist" })
+  }
+})
+
 module.exports = router
