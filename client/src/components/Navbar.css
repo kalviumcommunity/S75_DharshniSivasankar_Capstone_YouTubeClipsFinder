@@ -1,0 +1,127 @@
+.navbar {
+  background-color: var(--secondary-color);
+  color: var(--white);
+  padding: 1rem 0;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  color: var(--white);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.navbar-logo i {
+  color: var(--primary-color);
+  margin-right: 8px;
+  font-size: 1.5rem;
+}
+
+.search-form {
+  display: flex;
+  flex: 1;
+  max-width: 600px;
+  margin: 0 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 16px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 20px 0 0 20px;
+  font-size: 14px;
+  outline: none;
+  background-color: var(--white);
+  color: var(--text-color);
+}
+
+.search-button {
+  background-color: var(--light-gray);
+  color: var(--secondary-color);
+  border: 1px solid var(--medium-gray);
+  border-left: none;
+  border-radius: 0 20px 20px 0;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: var(--medium-gray);
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--white);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: var(--primary-color);
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.username {
+  font-size: 0.9rem;
+  color: var(--white);
+}
+
+.logout-button {
+  background-color: transparent;
+  color: var(--white);
+  border: 1px solid var(--white);
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.logout-button:hover {
+  background-color: var(--white);
+  color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-form {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
